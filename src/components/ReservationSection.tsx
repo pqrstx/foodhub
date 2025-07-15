@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,9 +7,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Clock, Users, Phone, Mail, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 const ReservationSection = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -20,12 +23,65 @@ const ReservationSection = () => {
     specialRequests: ""
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (user) {
+      // Pre-fill form with user data
+      setFormData(prev => ({
+        ...prev,
+        email: user.email || ""
+      }));
+    }
+  }, [user]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Reservation Request Sent!",
-      description: "We'll contact you shortly to confirm your booking.",
-    });
+    
+    try {
+      if (user) {
+        // Save to database if user is logged in
+        const { error } = await supabase
+          .from('reservations')
+          .insert({
+            user_id: user.id,
+            guest_name: formData.fullName,
+            guest_email: formData.email,
+            guest_phone: formData.phone,
+            date: formData.date,
+            time: formData.time,
+            guests: parseInt(formData.guests),
+            special_requests: formData.specialRequests || null
+          });
+
+        if (error) throw error;
+
+        toast({
+          title: "Reservation Saved!",
+          description: "Your reservation has been saved to your account. We'll contact you to confirm.",
+        });
+      } else {
+        toast({
+          title: "Reservation Request Sent!",
+          description: "We'll contact you shortly to confirm your booking. Sign in to track your reservations.",
+        });
+      }
+      
+      // Reset form
+      setFormData({
+        fullName: "",
+        email: user?.email || "",
+        phone: "",
+        guests: "1",
+        date: "",
+        time: "12:00",
+        specialRequests: ""
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "There was an issue submitting your reservation. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {

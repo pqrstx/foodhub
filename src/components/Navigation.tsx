@@ -1,9 +1,18 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Utensils } from "lucide-react";
+import { Menu, X, Utensils, User, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, signOut } = useAuth();
 
   const navItems = [
     { name: "Home", href: "#home" },
@@ -35,6 +44,33 @@ const Navigation = () => {
                 {item.name}
               </a>
             ))}
+            
+            {/* Auth Section */}
+            <div className="flex items-center space-x-4">
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="text-primary-foreground hover:text-primary">
+                      <User className="h-4 w-4 mr-2" />
+                      Account
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem asChild>
+                      <Link to="/dashboard">Dashboard</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={signOut}>
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button asChild variant="ghost" size="sm" className="text-primary-foreground hover:text-primary">
+                  <Link to="/auth">Sign In</Link>
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* Mobile menu button */}
@@ -64,6 +100,38 @@ const Navigation = () => {
                   {item.name}
                 </a>
               ))}
+              
+              {/* Mobile Auth Section */}
+              <div className="border-t border-primary/20 pt-3 mt-3">
+                {user ? (
+                  <>
+                    <Link
+                      to="/dashboard"
+                      className="text-primary-foreground hover:text-primary transition-colors duration-200 font-medium py-2 block"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Dashboard
+                    </Link>
+                    <button
+                      onClick={() => {
+                        signOut();
+                        setIsOpen(false);
+                      }}
+                      className="text-primary-foreground hover:text-primary transition-colors duration-200 font-medium py-2 text-left w-full"
+                    >
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    to="/auth"
+                    className="text-primary-foreground hover:text-primary transition-colors duration-200 font-medium py-2 block"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Sign In
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
         )}

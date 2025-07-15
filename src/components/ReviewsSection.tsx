@@ -5,15 +5,21 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Star, Quote } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const ReviewsSection = () => {
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: "",
     rating: 5,
     review: ""
   });
   const [isOpen, setIsOpen] = useState(false);
+  const [dbReviews, setDbReviews] = useState<any[]>([]);
 
   const reviews = [
     {
@@ -54,12 +60,61 @@ const ReviewsSection = () => {
     }
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    loadReviews();
+    if (user) {
+      setFormData(prev => ({ ...prev, name: user.email?.split('@')[0] || "" }));
+    }
+  }, [user]);
+
+  const loadReviews = async () => {
+    const { data } = await supabase
+      .from('reviews')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (data) setDbReviews(data);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically send the review to your backend
-    console.log("Review submitted:", formData);
-    setIsOpen(false);
-    setFormData({ name: "", rating: 5, review: "" });
+    
+    if (!user) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to leave a review.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('reviews')
+        .insert({
+          user_id: user.id,
+          reviewer_name: formData.name,
+          rating: formData.rating,
+          comment: formData.review
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Review submitted!",
+        description: "Thank you for your feedback.",
+      });
+
+      setIsOpen(false);
+      setFormData({ name: user.email?.split('@')[0] || "", rating: 5, review: "" });
+      loadReviews();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "There was an issue submitting your review.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleStarClick = (rating: number) => {
@@ -85,7 +140,7 @@ const ReviewsSection = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-          {reviews.map((review, index) => (
+          {[...dbReviews.slice(0, 3), ...reviews.slice(0, Math.max(0, 6 - dbReviews.length))].map((review, index) => (
             <Card 
               key={index} 
               className="bg-card shadow-soft hover:shadow-elegant transition-all duration-500 hover:scale-105 hover:-translate-y-2 animate-fade-in group cursor-pointer"
@@ -94,10 +149,12 @@ const ReviewsSection = () => {
               <CardContent className="p-6">
                 <div className="flex items-center mb-4">
                   <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center text-primary-foreground font-semibold mr-4 transition-transform duration-300 group-hover:scale-110 shadow-glow">
-                    {review.avatar}
+                    {review.avatar || review.reviewer_name?.charAt(0).toUpperCase() || 'U'}
                   </div>
                   <div>
-                    <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors duration-300">{review.name}</h3>
+                    <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors duration-300">
+                      {review.reviewer_name || review.name}
+                    </h3>
                     <div className="flex gap-1 mt-1">
                       {renderStars(review.rating)}
                     </div>
@@ -105,7 +162,9 @@ const ReviewsSection = () => {
                 </div>
                 <div className="relative">
                   <Quote className="h-6 w-6 text-primary mb-2 transition-transform duration-300 group-hover:scale-110" />
-                  <p className="text-muted-foreground italic group-hover:text-foreground transition-colors duration-300">{review.review}</p>
+                  <p className="text-muted-foreground italic group-hover:text-foreground transition-colors duration-300">
+                    {review.comment || review.review}
+                  </p>
                 </div>
               </CardContent>
             </Card>
