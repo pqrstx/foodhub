@@ -2,6 +2,12 @@ import heroImage from "@/assets/hero-kenyan-cuisine.jpg";
 import samosasImage from "@/assets/samosas.jpg";
 import ugaliImage from "@/assets/ugali-sukuma.jpg";
 import restaurantImage from "@/assets/restaurant-interior.jpg";
+import chapatiImage from "@/assets/chapati.jpg";
+import mandaziImage from "@/assets/mandazi.jpg";
+import kenyaTeaImage from "@/assets/kenyan-tea.jpg";
+import githeriImage from "@/assets/githeri.jpg";
+import tamarindJuiceImage from "@/assets/tamarind-juice.jpg";
+import matokeImage from "@/assets/matoke.jpg";
 
 const GallerySection = () => {
   const galleryImages = [
@@ -9,8 +15,12 @@ const GallerySection = () => {
     { src: samosasImage, alt: "Traditional samosas" },
     { src: ugaliImage, alt: "Ugali with sukuma wiki" },
     { src: restaurantImage, alt: "Restaurant interior" },
-    { src: heroImage, alt: "Nyama choma presentation" },
-    { src: samosasImage, alt: "Food presentation" },
+    { src: chapatiImage, alt: "Traditional Kenyan chapati bread" },
+    { src: mandaziImage, alt: "Fresh mandazi pastries" },
+    { src: kenyaTeaImage, alt: "Kenyan tea with milk" },
+    { src: githeriImage, alt: "Traditional githeri dish" },
+    { src: tamarindJuiceImage, alt: "Refreshing tamarind juice" },
+    { src: matokeImage, alt: "Matoke banana curry" },
   ];
 
   return (
