@@ -7,8 +7,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Calendar, MessageSquare, User, Settings, LogOut, Clock, Users, Star, TrendingUp, BookOpen, Plus, Edit3 } from 'lucide-react';
+import { Calendar, MessageSquare, User, Settings, LogOut, Clock, Users, Star, TrendingUp, BookOpen, Plus, Edit3, Bell, Activity } from 'lucide-react';
 import Navigation from '@/components/Navigation';
+import { ReservationManagement } from '@/components/dashboard/ReservationManagement';
+import { ReviewManagement } from '@/components/dashboard/ReviewManagement';
+import { ProfileManagement } from '@/components/dashboard/ProfileManagement';
+import { ActivityTimeline } from '@/components/dashboard/ActivityTimeline';
+import { NotificationCenter } from '@/components/dashboard/NotificationCenter';
 
 interface Profile {
   id: string;
@@ -25,6 +30,9 @@ interface Reservation {
   guests: number;
   status: string;
   special_requests: string;
+  guest_email: string;
+  guest_phone: string;
+  created_at: string;
 }
 
 interface Review {
@@ -233,13 +241,14 @@ const Dashboard = () => {
         </div>
 
         <Tabs defaultValue="reservations" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-muted p-1 rounded-lg">
+          <TabsList className="grid w-full grid-cols-5 bg-muted p-1 rounded-lg">
             <TabsTrigger 
               value="reservations" 
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 flex items-center gap-2"
             >
               <Calendar className="h-4 w-4" />
-              My Reservations
+              <span className="hidden sm:inline">My Reservations</span>
+              <span className="sm:hidden">Reservations</span>
               {reservations.length > 0 && (
                 <Badge variant="secondary" className="ml-1 text-xs">
                   {reservations.length}
@@ -251,7 +260,8 @@ const Dashboard = () => {
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 flex items-center gap-2"
             >
               <MessageSquare className="h-4 w-4" />
-              My Reviews
+              <span className="hidden sm:inline">My Reviews</span>
+              <span className="sm:hidden">Reviews</span>
               {reviews.length > 0 && (
                 <Badge variant="secondary" className="ml-1 text-xs">
                   {reviews.length}
@@ -263,143 +273,62 @@ const Dashboard = () => {
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 flex items-center gap-2"
             >
               <User className="h-4 w-4" />
-              Profile Settings
+              <span className="hidden sm:inline">Profile</span>
+              <span className="sm:hidden">Profile</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="activity" 
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 flex items-center gap-2"
+            >
+              <Activity className="h-4 w-4" />
+              <span className="hidden sm:inline">Activity</span>
+              <span className="sm:hidden">Activity</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="notifications" 
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 flex items-center gap-2"
+            >
+              <Bell className="h-4 w-4" />
+              <span className="hidden sm:inline">Notifications</span>
+              <span className="sm:hidden">Alerts</span>
             </TabsTrigger>
           </TabsList>
           
           <TabsContent value="reservations" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Your Reservations</CardTitle>
-                <CardDescription>
-                  View and manage your restaurant reservations
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {reservations.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Calendar className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">No reservations yet</p>
-                    <Button className="mt-4" onClick={() => navigate('/#reservations')}>
-                      Make a Reservation
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {reservations.map((reservation) => (
-                      <div key={reservation.id} className="border rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center space-x-2">
-                            <Clock className="h-4 w-4 text-muted-foreground" />
-                            <span className="font-medium">{reservation.date} at {reservation.time}</span>
-                          </div>
-                          <Badge variant={
-                            reservation.status === 'confirmed' ? 'default' :
-                            reservation.status === 'pending' ? 'secondary' : 'destructive'
-                          }>
-                            {reservation.status}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                          <div className="flex items-center space-x-1">
-                            <Users className="h-4 w-4" />
-                            <span>{reservation.guests} guests</span>
-                          </div>
-                          {reservation.special_requests && (
-                            <span>• {reservation.special_requests}</span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <ReservationManagement 
+              reservations={reservations} 
+              onReservationUpdate={loadUserData}
+            />
           </TabsContent>
           
           <TabsContent value="reviews" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Your Reviews</CardTitle>
-                <CardDescription>
-                  Reviews you've written about your dining experiences
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {reviews.length === 0 ? (
-                  <div className="text-center py-8">
-                    <MessageSquare className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">No reviews yet</p>
-                    <Button className="mt-4" onClick={() => navigate('/#reviews')}>
-                      Write a Review
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {reviews.map((review) => (
-                      <div key={review.id} className="border rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center space-x-2">
-                            {[...Array(5)].map((_, i) => (
-                              <Star
-                                key={i}
-                                className={`h-4 w-4 ${
-                                  i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'
-                                }`}
-                              />
-                            ))}
-                          </div>
-                          <span className="text-sm text-muted-foreground">
-                            {new Date(review.created_at).toLocaleDateString()}
-                          </span>
-                        </div>
-                        <p className="text-foreground">{review.comment}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <ReviewManagement 
+              reviews={reviews} 
+              onReviewUpdate={loadUserData}
+            />
           </TabsContent>
           
           <TabsContent value="profile" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Profile Settings</CardTitle>
-                <CardDescription>
-                  Manage your account information and preferences
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium">Full Name</label>
-                    <p className="text-muted-foreground">{profile?.full_name || 'Not set'}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Email</label>
-                    <p className="text-muted-foreground">{user?.email}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Phone</label>
-                    <p className="text-muted-foreground">{profile?.phone || 'Not set'}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Dietary Preferences</label>
-                    <p className="text-muted-foreground">
-                      {profile?.dietary_preferences?.length ? 
-                        profile.dietary_preferences.join(', ') : 
-                        'None specified'
-                      }
-                    </p>
-                  </div>
-                </div>
-                <Button className="mt-4">
-                  <Settings className="mr-2 h-4 w-4" />
-                  Edit Profile
-                </Button>
-              </CardContent>
-            </Card>
+            <ProfileManagement 
+              profile={profile} 
+              userEmail={user?.email || ''}
+              onProfileUpdate={loadUserData}
+            />
+          </TabsContent>
+          
+          <TabsContent value="activity" className="space-y-4">
+            <ActivityTimeline 
+              reservations={reservations}
+              reviews={reviews}
+              profile={profile}
+            />
+          </TabsContent>
+          
+          <TabsContent value="notifications" className="space-y-4">
+            <NotificationCenter 
+              reservations={reservations}
+              reviews={reviews}
+            />
           </TabsContent>
         </Tabs>
       </div>
