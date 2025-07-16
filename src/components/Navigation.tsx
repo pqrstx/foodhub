@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Utensils, User, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -13,6 +13,7 @@ import {
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, signOut } = useAuth();
+  const location = useLocation();
 
   const navItems = [
     { name: "Home", href: "#home" },
@@ -23,23 +24,32 @@ const Navigation = () => {
     { name: "Contact", href: "#contact" },
   ];
 
+  const handleNavClick = (href: string) => {
+    if (location.pathname !== '/') {
+      // If not on home page, navigate to home page first
+      window.location.href = '/' + href;
+    }
+    setIsOpen(false);
+  };
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-brown/95 backdrop-blur-sm shadow-soft">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center space-x-2">
+          <Link to="/" className="flex items-center space-x-2">
             <Utensils className="h-8 w-8 text-primary" />
             <span className="text-xl font-bold text-primary-foreground">FoodHub</span>
-          </div>
+          </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
               <a
                 key={item.name}
-                href={item.href}
-                className="text-primary-foreground hover:text-primary transition-colors duration-200 font-medium"
+                href={location.pathname === '/' ? item.href : '/' + item.href}
+                onClick={() => handleNavClick(item.href)}
+                className="text-primary-foreground hover:text-primary transition-colors duration-200 font-medium cursor-pointer"
               >
                 {item.name}
               </a>
@@ -93,9 +103,9 @@ const Navigation = () => {
               {navItems.map((item) => (
                 <a
                   key={item.name}
-                  href={item.href}
-                  className="text-primary-foreground hover:text-primary transition-colors duration-200 font-medium py-2"
-                  onClick={() => setIsOpen(false)}
+                  href={location.pathname === '/' ? item.href : '/' + item.href}
+                  onClick={() => handleNavClick(item.href)}
+                  className="text-primary-foreground hover:text-primary transition-colors duration-200 font-medium py-2 cursor-pointer"
                 >
                   {item.name}
                 </a>
