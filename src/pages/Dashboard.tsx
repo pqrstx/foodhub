@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Calendar, MessageSquare, User, Settings, LogOut, Clock, Users, Star } from 'lucide-react';
+import { Calendar, MessageSquare, User, Settings, LogOut, Clock, Users, Star, TrendingUp, BookOpen, Plus, Edit3 } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 
 interface Profile {
@@ -120,54 +120,151 @@ const Dashboard = () => {
       <Navigation />
       
       <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Welcome back, {profile?.full_name || user?.email}!</h1>
-            <p className="text-muted-foreground">Manage your reservations, reviews, and profile</p>
-          </div>
-          <Button variant="outline" onClick={handleSignOut}>
-            <LogOut className="mr-2 h-4 w-4" />
-            Sign Out
-          </Button>
+        <div className="mb-8">
+          <Card className="bg-gradient-primary text-white border-0 shadow-soft">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-2xl font-bold">
+                    {(profile?.full_name || user?.email)?.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <h1 className="text-3xl font-bold mb-1">
+                      Welcome back, {profile?.full_name || user?.email?.split('@')[0]}!
+                    </h1>
+                    <p className="text-white/80 text-lg">
+                      {reservations.length > 0 ? 
+                        `Your next reservation is on ${reservations[0]?.date}` : 
+                        'Ready to make your next reservation?'
+                      }
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center space-x-4 mb-3">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold">{reservations.length}</div>
+                      <div className="text-xs text-white/70">Reservations</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold">{reviews.length}</div>
+                      <div className="text-xs text-white/70">Reviews</div>
+                    </div>
+                  </div>
+                  <Button variant="secondary" onClick={handleSignOut} className="bg-white/20 text-white hover:bg-white/30 border-white/30">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign Out
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card>
+          <Card className="hover:shadow-soft transition-all duration-300 group">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Reservations</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <Calendar className="h-4 w-4 text-primary group-hover:scale-110 transition-transform" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{reservations.length}</div>
+              <div className="flex items-center justify-between">
+                <div className="text-2xl font-bold">{reservations.length}</div>
+                <div className="flex items-center text-xs text-muted-foreground">
+                  <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
+                  Active
+                </div>
+              </div>
+              <div className="mt-2 text-xs text-muted-foreground">
+                {reservations.filter(r => r.status === 'confirmed').length} confirmed
+              </div>
+              <Button size="sm" variant="outline" className="mt-3 w-full" onClick={() => navigate('/#reservations')}>
+                <Plus className="mr-2 h-3 w-3" />
+                New Reservation
+              </Button>
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="hover:shadow-soft transition-all duration-300 group">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Reviews Written</CardTitle>
-              <MessageSquare className="h-4 w-4 text-muted-foreground" />
+              <MessageSquare className="h-4 w-4 text-primary group-hover:scale-110 transition-transform" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{reviews.length}</div>
+              <div className="flex items-center justify-between">
+                <div className="text-2xl font-bold">{reviews.length}</div>
+                <div className="flex items-center text-xs text-muted-foreground">
+                  <Star className="h-3 w-3 mr-1 text-yellow-500" />
+                  {reviews.length > 0 ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) : '0.0'}
+                </div>
+              </div>
+              <div className="mt-2 text-xs text-muted-foreground">
+                Average rating given
+              </div>
+              <Button size="sm" variant="outline" className="mt-3 w-full" onClick={() => navigate('/#reviews')}>
+                <Edit3 className="mr-2 h-3 w-3" />
+                Write Review
+              </Button>
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="hover:shadow-soft transition-all duration-300 group">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Account Status</CardTitle>
-              <User className="h-4 w-4 text-muted-foreground" />
+              <User className="h-4 w-4 text-primary group-hover:scale-110 transition-transform" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">Active</div>
+              <div className="flex items-center justify-between">
+                <div className="text-2xl font-bold text-green-600">Active</div>
+                <div className="flex items-center text-xs text-muted-foreground">
+                  <BookOpen className="h-3 w-3 mr-1" />
+                  Member
+                </div>
+              </div>
+              <div className="mt-2 text-xs text-muted-foreground">
+                Since {new Date(user?.created_at || '').toLocaleDateString() || 'Recently'}
+              </div>
+              <Button size="sm" variant="outline" className="mt-3 w-full">
+                <Settings className="mr-2 h-3 w-3" />
+                Edit Profile
+              </Button>
             </CardContent>
           </Card>
         </div>
 
         <Tabs defaultValue="reservations" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="reservations">My Reservations</TabsTrigger>
-            <TabsTrigger value="reviews">My Reviews</TabsTrigger>
-            <TabsTrigger value="profile">Profile Settings</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 bg-muted p-1 rounded-lg">
+            <TabsTrigger 
+              value="reservations" 
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 flex items-center gap-2"
+            >
+              <Calendar className="h-4 w-4" />
+              My Reservations
+              {reservations.length > 0 && (
+                <Badge variant="secondary" className="ml-1 text-xs">
+                  {reservations.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="reviews" 
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 flex items-center gap-2"
+            >
+              <MessageSquare className="h-4 w-4" />
+              My Reviews
+              {reviews.length > 0 && (
+                <Badge variant="secondary" className="ml-1 text-xs">
+                  {reviews.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="profile" 
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 flex items-center gap-2"
+            >
+              <User className="h-4 w-4" />
+              Profile Settings
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="reservations" className="space-y-4">
