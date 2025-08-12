@@ -294,8 +294,8 @@ const ReservationWithMenuInner = () => {
               </TabsList>
 
               <TabsContent value="details">
-                {/* We keep a basic form. For simplicity, we capture its values later by reading from inputs if necessary. */}
-                <ReservationForm onNext={() => setActiveTab("menu")} />
+                {/* Reservation form with lifted state */}
+                <ReservationForm formData={formData} setFormData={setFormData} onNext={() => setActiveTab("menu")} />
               </TabsContent>
 
               <TabsContent value="menu">
@@ -313,8 +313,8 @@ const ReservationWithMenuInner = () => {
               </TabsContent>
 
               <TabsContent value="review">
-                {/* We need the form data; to keep implementation lean, we query recent values via simple selectors */}
-                <ReviewProxy onBack={() => setActiveTab("menu")} />
+                {/* Review uses lifted state */}
+                <ReviewAndCheckout formData={formData} onBack={() => setActiveTab("menu")} />
               </TabsContent>
             </Tabs>
           </div>
