@@ -5,10 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Utensils, Coffee, Wine, Search, Salad, Flame, Leaf, Star, MapPin } from "lucide-react";
 import { useState, useMemo } from "react";
 import { menuItems as menuData, formatKsh } from "@/data/menu";
+import { useCart } from "@/hooks/useCart";
 
 const MenuSection = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const { addItem } = useCart();
 
   const categories = [
     { id: "all", name: "All", icon: Utensils, image: "🍽️" },
@@ -145,11 +147,17 @@ const menuItems = menuData;
                   ))}
                 </div>
 
-                {/* Category Badge */}
+                {/* Category Badge and Add to Cart */}
                 <div className="flex justify-between items-center">
                   <Badge variant="outline" className="text-xs text-muted-foreground border-border">
                     {categories.find(cat => cat.id === item.category)?.name}
                   </Badge>
+                  <Button
+                    className="rounded-full"
+                    onClick={() => addItem({ menuItemId: item.id, name: item.name, price: item.price, quantity: 1 })}
+                  >
+                    Add to cart
+                  </Button>
                 </div>
               </CardContent>
             </Card>

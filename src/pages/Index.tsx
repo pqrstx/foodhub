@@ -7,20 +7,23 @@ import ReservationWithMenu from "@/components/ReservationWithMenu";
 import ReviewsSection from "@/components/ReviewsSection";
 import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
+import { CartProvider } from "@/hooks/useCart";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      <HeroSection />
-      <StorySection />
-      <MenuSection />
-      <GallerySection />
-      <ReservationWithMenu />
-      <ReviewsSection />
-      <ContactSection />
-      <Footer />
-    </div>
+    <CartProvider>
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <HeroSection />
+        <StorySection />
+        <MenuSection />
+        <GallerySection />
+        <ReservationWithMenu />
+        <ReviewsSection />
+        <ContactSection />
+        <Footer />
+      </div>
+    </CartProvider>
   );
 };
 

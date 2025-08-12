@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { CartProvider, useCart } from "@/hooks/useCart";
+import { useCart } from "@/hooks/useCart";
 import { CartSidebar } from "@/components/reservation/CartSidebar";
 import { MenuList } from "@/components/reservation/MenuList";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -268,6 +268,7 @@ const ReservationWithMenuInner = () => {
     time: "12:00",
     specialRequests: "",
   });
+  const { user } = useAuth();
 
   const handleToMenu = () => {
     // Read values from form by refs? Simpler: we pass setter via custom event; For brevity, keep in parent state
@@ -286,37 +287,53 @@ const ReservationWithMenuInner = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="details">1. Details</TabsTrigger>
-                <TabsTrigger value="menu">2. Menu</TabsTrigger>
-                <TabsTrigger value="review">3. Review</TabsTrigger>
-              </TabsList>
+            {!user ? (
+              <Card className="shadow-medium">
+                <CardHeader>
+                  <CardTitle className="text-brown">Sign in to reserve</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <p className="text-muted-foreground">
+                    You need an account to make a reservation and pre-order. Please sign in or create an account.
+                  </p>
+                  <div className="flex justify-end">
+                    <Button className="rounded-full" onClick={() => (window.location.href = "/auth")}>Sign in</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="details">1. Details</TabsTrigger>
+                  <TabsTrigger value="menu">2. Menu</TabsTrigger>
+                  <TabsTrigger value="review">3. Review</TabsTrigger>
+                </TabsList>
 
-              <TabsContent value="details">
-                {/* Reservation form with lifted state */}
-                <ReservationForm formData={formData} setFormData={setFormData} onNext={() => setActiveTab("menu")} />
-              </TabsContent>
+                <TabsContent value="details">
+                  {/* Reservation form with lifted state */}
+                  <ReservationForm formData={formData} setFormData={setFormData} onNext={() => setActiveTab("menu")} />
+                </TabsContent>
 
-              <TabsContent value="menu">
-                <Card className="shadow-medium">
-                  <CardHeader>
-                    <CardTitle className="text-brown">Select Dishes</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <MenuList />
-                    <div className="flex justify-end mt-6">
-                      <Button onClick={() => setActiveTab("review")} className="rounded-full">Next: Review</Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
+                <TabsContent value="menu">
+                  <Card className="shadow-medium">
+                    <CardHeader>
+                      <CardTitle className="text-brown">Select Dishes</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <MenuList />
+                      <div className="flex justify-end mt-6">
+                        <Button onClick={() => setActiveTab("review")} className="rounded-full">Next: Review</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
 
-              <TabsContent value="review">
-                {/* Review uses lifted state */}
-                <ReviewAndCheckout formData={formData} onBack={() => setActiveTab("menu")} />
-              </TabsContent>
-            </Tabs>
+                <TabsContent value="review">
+                  {/* Review uses lifted state */}
+                  <ReviewAndCheckout formData={formData} onBack={() => setActiveTab("menu")} />
+                </TabsContent>
+              </Tabs>
+            )}
           </div>
 
           <div className="lg:col-span-1">
@@ -346,9 +363,7 @@ const ReviewProxy = ({ onBack }: { onBack: () => void }) => {
 
 const ReservationWithMenu = () => {
   return (
-    <CartProvider>
-      <ReservationWithMenuInner />
-    </CartProvider>
+    <ReservationWithMenuInner />
   );
 };
 
