@@ -8,7 +8,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Calendar, Clock, Users, Edit3, Trash2, Filter, Search, CalendarDays, Eye } from 'lucide-react';
+import { Calendar, Clock, Users, Edit3, Trash2, Filter, Search, CalendarDays, Eye, ShoppingBag } from 'lucide-react';
+import { formatKsh } from '@/data/menu';
 
 interface Reservation {
   id: string;
@@ -21,6 +22,17 @@ interface Reservation {
   guest_email: string;
   guest_phone: string;
   created_at: string;
+  reservation_orders?: {
+    id: string;
+    total_amount: number;
+    payment_status: string;
+    order_items: {
+      name: string;
+      quantity: number;
+      price: number;
+      special_requests?: string;
+    }[];
+  }[];
 }
 
 interface ReservationManagementProps {
@@ -161,6 +173,39 @@ export const ReservationManagement = ({ reservations, onReservationUpdate }: Res
           <p className="text-sm text-muted-foreground">
             <strong>Special requests:</strong> {reservation.special_requests}
           </p>
+        </div>
+      )}
+
+      {/* Display food orders if available */}
+      {reservation.reservation_orders && reservation.reservation_orders.length > 0 && (
+        <div className="mt-3 p-3 bg-accent/50 rounded-md">
+          <div className="flex items-center space-x-2 mb-2">
+            <ShoppingBag className="h-4 w-4 text-primary" />
+            <p className="text-sm font-medium">Pre-ordered Food</p>
+          </div>
+          {reservation.reservation_orders.map((order) => (
+            <div key={order.id} className="space-y-2">
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-muted-foreground">
+                  {order.order_items.length} item{order.order_items.length !== 1 ? 's' : ''}
+                </span>
+                <span className="font-medium">{formatKsh(order.total_amount)}</span>
+              </div>
+              <div className="space-y-1">
+                {order.order_items.slice(0, 3).map((item, idx) => (
+                  <div key={idx} className="flex justify-between text-xs">
+                    <span>{item.name} x{item.quantity}</span>
+                    <span>{formatKsh(item.price * item.quantity)}</span>
+                  </div>
+                ))}
+                {order.order_items.length > 3 && (
+                  <p className="text-xs text-muted-foreground">
+                    +{order.order_items.length - 3} more item{order.order_items.length - 3 !== 1 ? 's' : ''}
+                  </p>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -317,6 +362,41 @@ export const ReservationManagement = ({ reservations, onReservationUpdate }: Res
                 <div>
                   <p className="text-sm font-medium">Special Requests</p>
                   <p className="text-sm text-muted-foreground">{selectedReservation.special_requests}</p>
+                </div>
+              )}
+              
+              {/* Display detailed food order in dialog */}
+              {selectedReservation.reservation_orders && selectedReservation.reservation_orders.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium mb-2">Food Order</p>
+                  {selectedReservation.reservation_orders.map((order) => (
+                    <div key={order.id} className="space-y-2 p-3 bg-accent/20 rounded-md">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-muted-foreground">Order Total</span>
+                        <span className="font-medium">{formatKsh(order.total_amount)}</span>
+                      </div>
+                      <div className="space-y-1">
+                        {order.order_items.map((item, idx) => (
+                          <div key={idx} className="flex justify-between text-sm">
+                            <div>
+                              <p className="font-medium">{item.name}</p>
+                              {item.special_requests && (
+                                <p className="text-xs text-muted-foreground italic">
+                                  Note: {item.special_requests}
+                                </p>
+                              )}
+                            </div>
+                            <div className="text-right">
+                              <p>x{item.quantity}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {formatKsh(item.price * item.quantity)}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>

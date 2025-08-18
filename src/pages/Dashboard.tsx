@@ -72,14 +72,27 @@ const Dashboard = () => {
         .from('profiles')
         .select('*')
         .eq('user_id', user?.id)
-        .single();
+        .maybeSingle();
       
       if (profileData) setProfile(profileData);
 
-      // Load reservations
+      // Load reservations with order data
       const { data: reservationsData } = await supabase
         .from('reservations')
-        .select('*')
+        .select(`
+          *,
+          reservation_orders (
+            id,
+            total_amount,
+            payment_status,
+            order_items (
+              name,
+              quantity,
+              price,
+              special_requests
+            )
+          )
+        `)
         .eq('user_id', user?.id)
         .order('date', { ascending: false });
       
